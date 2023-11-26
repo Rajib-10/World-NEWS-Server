@@ -25,6 +25,7 @@ async function run() {
 
     const userCollection = client.db("newsDB").collection("users");
     const publishersCollection = client.db("newsDB").collection("publishers");
+    const articleCollection = client.db("newsDB").collection("articles");
 
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
@@ -65,11 +66,25 @@ async function run() {
 
     // publisher related api
 
+    app.get("/publishers", async (req, res) => {
+      const result = await publishersCollection.find().toArray();
+      res.send(result);
+    });
+
     app.post('/publishers',async(req,res)=>{
       const publisher = req.body; 
       const result = await publishersCollection.insertOne(publisher);
       res.send(result);
     })
+
+    // articles related api
+
+    app.post('/articles',async(req,res)=>{
+      const article = req.body; 
+      const result = await articleCollection.insertOne(article);
+      res.send(result);
+    })
+    
 
     await client.db("admin").command({ ping: 1 });
     console.log(
