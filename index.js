@@ -24,6 +24,7 @@ async function run() {
     await client.connect();
 
     const userCollection = client.db("newsDB").collection("users");
+    const publishersCollection = client.db("newsDB").collection("publishers");
 
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
@@ -60,6 +61,15 @@ async function run() {
       const result = await userCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
+
+
+    // publisher related api
+
+    app.post('/publishers',async(req,res)=>{
+      const publisher = req.body; 
+      const result = await publishersCollection.insertOne(publisher);
+      res.send(result);
+    })
 
     await client.db("admin").command({ ping: 1 });
     console.log(
