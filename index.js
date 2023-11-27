@@ -79,11 +79,53 @@ async function run() {
 
     // articles related api
 
+    app.get("/articles", async (req, res) => {
+      const result = await articleCollection.find().toArray();
+      res.send(result);
+    });
+
     app.post('/articles',async(req,res)=>{
       const article = req.body; 
       const result = await articleCollection.insertOne(article);
       res.send(result);
     })
+
+    app.delete("/articles/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await articleCollection.deleteOne(query);
+      res.send(result);
+    });
+
+     // article approve
+     app.patch("/articles/approve/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          status: "approved",
+        },
+      };
+      const result = await articleCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+
+     // article decline
+     app.patch("/articles/decline/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          status: "declined",
+           message: data.message
+        },
+      };
+      const result = await articleCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+    
     
 
     await client.db("admin").command({ ping: 1 });
