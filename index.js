@@ -97,6 +97,23 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/articles/:id",async(req,res)=>{
+      const id = req.params.id;
+      const data = req.body
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          title: data.title,
+          description: data.description,
+          publisher: data.publisher,
+          tags: data.tags,
+          image: data.image
+        },
+      };
+      const result = await articleCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
+
      // article approve
      app.patch("/articles/approve/:id", async (req, res) => {
       const id = req.params.id;
@@ -104,6 +121,19 @@ async function run() {
       const updatedDoc = {
         $set: {
           status: "approved",
+        },
+      };
+      const result = await articleCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+     // article premium
+     app.patch("/articles/premium/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          isPremium: true,
         },
       };
       const result = await articleCollection.updateOne(filter, updatedDoc);
