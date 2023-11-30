@@ -103,7 +103,7 @@ async function run()  {
       res.send(result);
     });
 
-    app.delete("/users/:id", async (req, res) => {
+    app.delete("/users/:id",verifyToken,verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await userCollection.deleteOne(query);
@@ -111,7 +111,7 @@ async function run()  {
     });
 
     // make admin
-    app.patch("/users/admin/:id", async (req, res) => {
+    app.patch("/users/admin/:id",verifyToken,verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
@@ -131,7 +131,7 @@ async function run()  {
       res.send(result);
     });
 
-    app.post('/publishers',async(req,res)=>{
+    app.post('/publishers',verifyToken,verifyAdmin,async(req,res)=>{
       const publisher = req.body; 
       const result = await publishersCollection.insertOne(publisher);
       res.send(result);
@@ -161,13 +161,13 @@ async function run()  {
   }
 });
 
-    app.post('/articles',async(req,res)=>{
+    app.post('/articles',verifyToken,async(req,res)=>{
       const article = req.body; 
       const result = await articleCollection.insertOne(article);
       res.send(result);
     })
 
-    app.delete("/articles/:id", async (req, res) => {
+    app.delete("/articles/:id",verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await articleCollection.deleteOne(query);
@@ -187,7 +187,7 @@ async function run()  {
     })
 
     // article update 
-    app.patch("/articles/:id",async(req,res)=>{
+    app.patch("/articles/:id",verifyToken,async(req,res)=>{
       const id = req.params.id;
       const data = req.body
       const filter = { _id: new ObjectId(id) };
@@ -205,7 +205,7 @@ async function run()  {
     })
 
      // article approve
-     app.patch("/articles/approve/:id", async (req, res) => {
+     app.patch("/articles/approve/:id",verifyToken,verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
@@ -218,7 +218,7 @@ async function run()  {
     });
 
      // article premium
-     app.patch("/articles/premium/:id", async (req, res) => {
+     app.patch("/articles/premium/:id",verifyToken,verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
@@ -232,7 +232,7 @@ async function run()  {
 
 
      // article decline
-     app.patch("/articles/decline/:id", async (req, res) => {
+     app.patch("/articles/decline/:id",verifyToken,verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const data = req.body
       const filter = { _id: new ObjectId(id) };
@@ -248,7 +248,7 @@ async function run()  {
 
     // stat count 
 
-    app.get('/admin-stats',async(req,res)=>{
+    app.get('/admin-stats',verifyToken,verifyAdmin,async(req,res)=>{
       const users = await userCollection.estimatedDocumentCount()
       const publishers = await publishersCollection.estimatedDocumentCount()
       const articles = await articleCollection.estimatedDocumentCount()
@@ -264,6 +264,24 @@ async function run()  {
       })
     })
     
+
+    app.get('/publisher-count',verifyToken,verifyAdmin, async (req, res) => {
+      try {
+        const publisherCount = await articleCollection.aggregate([
+          {
+            $group: {
+              _id: '$publisher',
+              count: { $sum: 1 },
+            },
+          },
+        ]).toArray();
+    
+        res.json(publisherCount);
+      } catch (error) {
+        console.error(error);
+        
+      }
+    });
     
 
     await client.db("admin").command({ ping: 1 });
