@@ -35,6 +35,7 @@ async function run()  {
 
     app.post('/jwt',async(req,res)=>{
       const user = req.body
+    
       const token = jwt.sign(user,process.env.SECRET_ACCESS_TOKEN,{expiresIn: '1hr'})
       res.send({token})
     })
@@ -136,38 +137,15 @@ async function run()  {
       res.send(result);
     })
 
-    // articles related api
 
-  //   app.get("/articles", async (req, res) => {
-  //    try {
-  //   const searchQuery = req.query.search || ''; 
-  //   const regex = new RegExp(searchQuery, 'i'); 
-
-  //   const result = await articleCollection
-  //     .find({ title: { $regex: regex } })
-  //     .toArray();
-
-  //   res.send(result);
-  // } catch (error) {
-  //   console.error('Error fetching articles:', error);
-  //   res.status(500).send('Internal Server Error');
-  // }
-  //   });
 
   app.get("/articles", async (req, res) => {
-  const { search, tags } = req.query;
+  const  {search} = req.query;
   const query = {};
 
   if (search) {
-    // Add search query
     query.title = { $regex: new RegExp(search, "i") };
   }
-
-  if (tags) {
-    // Add tags query
-    query.tags = { $in: tags.split(",") };
-  }
-
   const result = await articleCollection.find(query).toArray();
   res.send(result);
 });
@@ -267,6 +245,24 @@ async function run()  {
       const result = await articleCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
+
+    // stat count 
+
+    app.get('/admin-stats',async(req,res)=>{
+      const users = await userCollection.estimatedDocumentCount()
+      const publishers = await publishersCollection.estimatedDocumentCount()
+      const articles = await articleCollection.estimatedDocumentCount()
+      const premiumArticles = await articleCollection.countDocuments({ isPremium: true });
+     
+     
+
+       res.send({
+        users,
+        publishers,
+        articles,
+        premiumArticles
+      })
+    })
     
     
 
